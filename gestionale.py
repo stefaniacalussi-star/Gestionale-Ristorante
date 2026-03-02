@@ -62,3 +62,36 @@ def colora_turni(row):
     return ['background-color: #FFF4E0' if row.Turno == 'Pranzo' else 'background-color: #E0F0FF'] * len(row)
 
 st.dataframe(df.style.apply(colora_turni, axis=1), use_container_width=True)
+
+# --- FILTRI DI VISUALIZZAZIONE ---
+st.write("---")
+scelta_vista = st.radio("Seleziona Vista:", ["Lista Completa", "Settimanale", "Mensile"], horizontal=True)
+
+# Convertiamo la colonna Data in formato data vero per poter fare i calcoli
+df['Data'] = pd.to_datetime(df['Data']).dt.date
+oggi = datetime.now().date()
+
+if scelta_vista == "Settimanale":
+    # Filtra i prossimi 7 giorni
+    fine_settimana = oggi + pd.Timedelta(days=7)
+    df_filtrato = df[(df['Data'] >= oggi) & (df['Data'] <= fine_settimana)]
+    st.subheader(f"📅 Prenotazioni della Settimana (fino al {fine_settimana.strftime('%d/%m')})")
+
+elif scelta_vista == "Mensile":
+    # Filtra il mese corrente
+    df_filtrato = df[pd.to_datetime(df['Data']).dt.month == oggi.month]
+    st.subheader(f"🗓️ Prenotazioni di {datetime.now().strftime('%B')}")
+
+else:
+    df_filtrato = df
+    st.subheader("📋 Tutte le Prenotazioni")
+
+# --- VISUALIZZAZIONE TABELLA ---
+if df_filtrato.empty:
+    st.info("Nessuna prenotazione trovata per questo periodo.")
+else:
+    def style_row(row):
+        color = 'background-color: #FFF4E0' if row.Turno == 'Pranzo' else 'background-color: #E0F0FF'
+        return [color] * len(row)
+
+    st.dataframe(df_filtrato.sort_values(by="Data").style.apply(style_row, axis=1), use_container_width=True)
