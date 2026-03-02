@@ -5,6 +5,14 @@ from datetime import datetime
 from openai import OpenAI
 import json 
 st.set_page_config(page_title="Gestionale Ristorante", layout="wide")
+def check_password():
+    if "password_correct" not in st.session_state:
+        st.text_input("Inserisci Password", type="password", on_change=lambda: st.session_state.update({"password_correct": st.session_state.password == st.secrets["PASSWORD"]}), key="password")
+        return False
+    return st.session_state["password_correct"]
+
+if not check_password():
+    st.stop()
 
 st.title("📋 Agenda Prenotazioni")
 audio_file = st.sidebar.audio_input("Prenota a voce")
